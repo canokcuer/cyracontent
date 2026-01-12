@@ -1,0 +1,13 @@
+# Activity Log
+# Format: [timestamp] ACTION: description
+
+[2026-01-13 14:00] INIT: Project created with uv init
+[2026-01-13 14:05] INSTALL: Dependencies added to pyproject.toml
+[2026-01-13 14:10] DOCKER: Qdrant container started on localhost:6333
+[2026-01-13 14:15] CREATE: 4 Qdrant collections (wellness, products, scientific, brand)
+[2026-01-13 14:20] DEBUG: Fixed SSL connection issue in qdrant_client.py
+[2026-01-13 14:25] DEBUG: Fixed search() → query_points() API change
+[2026-01-13 14:30] INDEX: quickguide.md → 14 chunks in wellness collection
+[2026-01-13 14:35] TEST: RAG retrieval working (score 0.501)
+[2026-01-13 14:40] GIT: Initial commit pushed to GitHub
+[2026-01-13 14:45] RALPH: Implemented Ralph methodology

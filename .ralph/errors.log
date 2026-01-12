@@ -1,0 +1,18 @@
+# Errors Log
+# Format: [timestamp] ERROR: description
+
+[2026-01-13 Session 1] ERROR: Qdrant SSL WRONG_VERSION_NUMBER
+- Cause: .env had inline comment parsed as API key value
+- Resolution: Moved comments to separate lines, made QDRANT_API_KEY empty
+
+[2026-01-13 Session 1] ERROR: QdrantClient has no attribute 'search'
+- Cause: New Qdrant client uses query_points() instead
+- Resolution: Updated qdrant_client.py to use query_points()
+
+[2026-01-13 Session 1] ERROR: CollectionInfo has no attribute 'vectors_count'
+- Cause: Qdrant API changed
+- Resolution: Removed vectors_count from get_collection_info()
+
+[2026-01-13 Session 1] ERROR: Voyage AI 429 rate limit
+- Cause: Free tier has 3 RPM limit
+- Resolution: Added delays between embedding requests

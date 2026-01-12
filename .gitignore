@@ -18,10 +18,18 @@ wheels/
 # Qdrant data (can be regenerated)
 qdrant_storage/
 
-# Output files (generated content)
-output/articles/
-output/json/
-output/logs/
+# Output files (generated content, but keep .gitkeep)
+output/articles/*
+!output/articles/.gitkeep
+output/json/*
+!output/json/.gitkeep
+output/logs/*
+!output/logs/.gitkeep
+
+# Ralph session files (large, can be regenerated)
+# Note: .ralph/ directory IS tracked - it contains important state
+# .ralph/activity.log can get large, exclude if needed
+# .ralph/activity.log
 
 # IDE
 .vscode/

@@ -1,0 +1,51 @@
+# Qdrant Vector Database Configuration
+
+connection:
+  host: ${QDRANT_HOST:-localhost}
+  port: ${QDRANT_PORT:-6333}
+  api_key: ${QDRANT_API_KEY:-}  # Leave empty for local
+
+# Collections for different knowledge types
+collections:
+  wellness:
+    name: cyrasoul_wellness
+    description: "Wellness tips, health guides, lifestyle content"
+    vector_size: 1024  # Voyage AI multilingual-2
+    distance: Cosine
+
+  products:
+    name: cyrasoul_products
+    description: "Product information, ingredients, benefits"
+    vector_size: 1024
+    distance: Cosine
+
+  scientific:
+    name: cyrasoul_scientific
+    description: "Scientific references, research papers, citations"
+    vector_size: 1024
+    distance: Cosine
+
+  brand:
+    name: cyrasoul_brand
+    description: "Brand voice, tone guidelines, messaging"
+    vector_size: 1024
+    distance: Cosine
+
+# Embedding configuration
+embeddings:
+  model: voyage-multilingual-2
+  batch_size: 128
+  max_retries: 3
+
+# Chunking configuration
+chunking:
+  chunk_size: 500  # tokens
+  chunk_overlap: 100  # tokens
+  min_chunk_size: 100  # tokens
+
+# Retrieval configuration
+retrieval:
+  top_k: 5
+  score_threshold: 0.7
+  rerank: true
+  rerank_top_k: 3

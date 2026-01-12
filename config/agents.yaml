@@ -1,0 +1,129 @@
+# CyraSoul Multi-Agent Content Generation Configuration
+
+orchestrator:
+  name: CAN
+  description: "Master coordinator managing the entire content pipeline"
+  model: claude-opus-4-5-20250514
+  max_tokens: 8192
+
+agents:
+  fenix:
+    name: FENIX
+    role: Content Writer
+    description: "Turkish wellness content specialist for CyraSoul"
+    model: claude-sonnet-4-20250514
+    max_tokens: 4096
+    language: tr
+    system_prompt: |
+      Sen CyraSoul için Türkçe wellness içerik yazarısın. Görevin:
+      - Bilgi tabanından wellness bilgilerini kullanarak içerik oluştur
+      - CyraSoul'un bilimsel ama samimi marka sesini koru
+      - Ürünleri (DailyGlow, DreamGlow, MindFuel, Reset Button, TheChill) doğal şekilde entegre et
+      - SEO-uyumlu başlık hiyerarşisi kullan (H1, H2, H3)
+      - Okuyucuya değer katan, eğitici içerikler yaz
+      - Her makalede 1500-2500 kelime hedefle
+      - Paragraflari kisa ve okunakli tut
+
+  hippocrates:
+    name: HIPPOCRATES
+    role: Scientific Reviewer
+    description: "Health and wellness accuracy validator"
+    model: claude-opus-4-5-20250514
+    max_tokens: 4096
+    language: tr
+    system_prompt: |
+      Sen sağlık ve wellness içerik doğrulama uzmanısın. Görevin:
+      - Tüm sağlık iddialarını bilimsel literatürle doğrula
+      - Desteklenmeyen veya yanıltıcı iddiaları işaretle
+      - Güncel araştırmalara referans ekle (PubMed, Google Scholar)
+      - İçeriğin tıbbi olarak sorumlu olduğundan emin ol
+      - "Bir sağlık uzmanına danışın" uyarılarını gerekli yerlere ekle
+      - Abartılı iddiaları yumuşat
+      - Bilimsel kaynakları dipnot olarak ekle
+
+  neo:
+    name: NEO
+    role: SEO Optimizer
+    description: "Search engine optimization specialist for Turkish content"
+    model: claude-sonnet-4-20250514
+    max_tokens: 4096
+    language: tr
+    system_prompt: |
+      Sen SEO optimizasyon uzmanısın. Görevin:
+      - Türkçe arama sorgularına göre içeriği optimize et
+      - Meta başlık: maksimum 60 karakter
+      - Meta açıklama: 150-160 karakter arası
+      - Başlık hiyerarşisini kontrol et (tek H1, mantıklı H2/H3 yapısı)
+      - Dahili link önerileri ekle (cyrasoul.com içi linkler)
+      - Anahtar kelime yoğunluğunu dengele (%1-2)
+      - İçeriğin okunabilirliğini değerlendir
+      - Alt metin önerileri sun
+      - URL slug önerisi ver
+
+# Content type configurations
+content_types:
+  blog:
+    min_words: 1500
+    max_words: 2500
+    sections_min: 5
+    sections_max: 7
+    output_formats:
+      - markdown
+      - shopify
+      - json
+
+  product:
+    min_words: 500
+    max_words: 800
+    include_schema: true
+    output_formats:
+      - markdown
+      - shopify
+      - json
+
+  social:
+    instagram:
+      max_chars: 2200
+      hashtags_min: 15
+      hashtags_max: 20
+    facebook:
+      max_chars: 500
+    output_formats:
+      - json
+
+# Products for content integration
+products:
+  - name: DailyGlow
+    category: Cilt ve Enerji
+    keywords:
+      - cilt parlaklığı
+      - enerji desteği
+      - günlük vitamin
+
+  - name: DreamGlow
+    category: Gece Bakımı
+    keywords:
+      - gece onarımı
+      - kolajen desteği
+      - cilt yenilenmesi
+
+  - name: MindFuel
+    category: Zihinsel Performans
+    keywords:
+      - odaklanma
+      - zihinsel netlik
+      - kognitif destek
+
+  - name: Reset Button
+    category: Detoks
+    keywords:
+      - karaciğer desteği
+      - bitkisel detoks
+      - arınma
+
+  - name: TheChill
+    category: Stres Yönetimi
+    keywords:
+      - stres azaltma
+      - rahatlama
+      - adaptogen

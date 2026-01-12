@@ -18,6 +18,7 @@ cd /Users/canokcuer/cyracontent && uv run python -m pytest tests/ -v --tb=short
 **Verification:** `uv run python scripts/verify_knowledge.py` returns all green
 
 - [x] Wellness: `curl -s http://localhost:6333/collections/wellness | jq '.result.points_count'` > 0
+- [x] SEO Standards: `ls knowledge_base/seo/standards.md` exists
 - [ ] Products: `curl -s http://localhost:6333/collections/products | jq '.result.points_count'` > 0
   - **BLOCKED:** Need product documents from user (DailyGlow, DreamGlow, MindFuel, Reset Button, TheChill)
 - [ ] Brand: `curl -s http://localhost:6333/collections/brand | jq '.result.points_count'` > 0
@@ -43,13 +44,34 @@ cd /Users/canokcuer/cyracontent && uv run python -m pytest tests/ -v --tb=short
 - [x] Shopify: `uv run python -c "from src.outputs.shopify import ShopifyPublisher; print('OK')"` passes
 - [ ] Export test: `uv run python scripts/test_outputs.py` creates files in output/
 
-### Phase 5: End-to-End Generation
-**Verification:** Generated article exists and passes validation
+### Phase 5: SEO Validation
+**Verification:** `uv run python scripts/validate_seo.py [article.md]` returns score >= 80
+
+**SEO Requirements (from `knowledge_base/seo/standards.md`):**
+- [ ] H1: Exactly 1, length 50-60 characters
+- [ ] H2: Count 3-7, at least 2 contain keyword
+- [ ] Meta description: 150-160 characters exactly
+- [ ] URL slug: Lowercase, no Turkish chars, max 5 words
+- [ ] Word count: 1500-2500 for blog, 500-1000 for product
+- [ ] Keyword: Appears in first 100 words
+- [ ] Lists: At least 1 bulleted/numbered list
+- [ ] Internal links: Minimum 2 cyrasoul.com links
+- [ ] Readability: Paragraphs max 4 sentences
+
+**SEO Score Thresholds:**
+| Score | Grade | Action |
+|-------|-------|--------|
+| >= 80 | A | Publish |
+| 60-79 | B | Minor fixes, then publish |
+| 40-59 | C | Send to NEO for revision |
+| < 40 | D | Major rewrite needed |
+
+### Phase 6: End-to-End Generation
+**Verification:** Generated article exists and passes ALL validation
 
 - [ ] Generate: `uv run python main.py generate --topic "Uyku Kalitesi" --type blog` exits 0
 - [ ] Output exists: `ls output/articles/*.md | head -1` returns a file
-- [ ] Word count: Generated article has 1500-2500 words
-- [ ] SEO check: Article has H1, 3+ H2s, meta description
+- [ ] SEO score: `uv run python scripts/validate_seo.py output/articles/*.md` returns >= 80
 - [ ] Turkish check: No English words in main content (except brand names)
 
 ---
@@ -63,6 +85,8 @@ cd /Users/canokcuer/cyracontent && uv run python -m pytest tests/ -v --tb=short
 | Scientific refs | Research papers, studies to cite | `knowledge_base/scientific/` |
 | Shopify creds | Store URL + access token | `.env` file |
 
+**User can customize:** `knowledge_base/seo/standards.md` (defaults created)
+
 ---
 
 ## Current Focus
@@ -70,9 +94,9 @@ cd /Users/canokcuer/cyracontent && uv run python -m pytest tests/ -v --tb=short
 
 Once documents are provided:
 1. Index them into Qdrant
-2. Create verification scripts
-3. Test full pipeline
-4. Generate sample article
+2. Test full pipeline
+3. Generate sample article
+4. Validate SEO score >= 80
 
 ---
 
@@ -98,6 +122,9 @@ print(r.retrieve('uyku', 'wellness'))
 
 # Generate content
 uv run python main.py generate --topic 'Uyku Kalitesi' --type blog
+
+# Validate SEO
+uv run python scripts/validate_seo.py output/articles/uyku-kalitesi.md --verbose
 ```
 
 ---
@@ -108,4 +135,11 @@ uv run python main.py generate --topic 'Uyku Kalitesi' --type blog
 1. All `[ ]` above are `[x]`
 2. `uv run pytest tests/ -v` passes with 0 failures
 3. A sample Turkish article exists in `output/articles/`
-4. The article passes SEO validation (H1, H2s, meta)
+4. `uv run python scripts/validate_seo.py [article]` returns score >= 80
+5. Article follows all rules in `knowledge_base/seo/standards.md`
+
+**Machine-verifiable final check:**
+```bash
+# This must exit 0 for task to be complete
+uv run python scripts/validate_seo.py output/articles/*.md && echo "DONE"
+```

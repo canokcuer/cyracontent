@@ -1,87 +1,111 @@
 # CyraSoul Multi-Agent Content Framework
 
-## Task Overview
-Build and operate a multi-agent RAG system for generating Turkish wellness content for cyrasoul.com.
-
-## Test Commands
+## Test Command (Run This to Check Done)
 ```bash
-# Verify Qdrant is running
-curl -s http://localhost:6333/collections | jq
-
-# Test RAG retrieval
-cd /Users/canokcuer/cyracontent && uv run python -c "
-from src.rag.retriever import RAGRetriever
-r = RAGRetriever()
-results = r.retrieve('uyku kalitesi', collection='wellness')
-print(f'Found {len(results)} results')
-"
-
-# Run unit tests
-cd /Users/canokcuer/cyracontent && uv run pytest tests/ -v
+cd /Users/canokcuer/cyracontent && uv run python -m pytest tests/ -v --tb=short
 ```
 
 ---
 
 ## Success Criteria
 
-### Phase 1: Infrastructure Setup
-- [x] Project structure created
-- [x] Dependencies installed (claude-agent-sdk, qdrant-client, voyageai)
-- [x] Qdrant running locally (Docker)
-- [x] Collections created (wellness, products, scientific, brand)
-- [x] Voyage AI embeddings working
-- [x] Git repository initialized and pushed
+### Phase 1: Infrastructure [COMPLETE]
+- [x] `uv run python -c "import anthropic; print('OK')"` passes
+- [x] `curl -s http://localhost:6333/collections | jq '.result.collections | length'` returns 4
+- [x] `git remote -v` shows github.com/canokcuer/cyracontent
 
 ### Phase 2: Knowledge Base
-- [x] quickguide.md indexed into wellness collection (14 chunks)
-- [ ] Product information indexed (DailyGlow, DreamGlow, MindFuel, Reset Button, TheChill)
-- [ ] Brand guidelines indexed
-- [ ] Scientific references indexed
+**Verification:** `uv run python scripts/verify_knowledge.py` returns all green
 
-### Phase 3: Agent Implementation
-- [x] FENIX agent skeleton created (content writer)
-- [x] HIPPOCRATES agent skeleton created (scientific reviewer)
-- [x] NEO agent skeleton created (SEO optimizer)
-- [x] CAN orchestrator skeleton created
-- [ ] Agent prompts refined with knowledge context
-- [ ] Agent handoff logic tested
-- [ ] Full pipeline tested end-to-end
+- [x] Wellness: `curl -s http://localhost:6333/collections/wellness | jq '.result.points_count'` > 0
+- [ ] Products: `curl -s http://localhost:6333/collections/products | jq '.result.points_count'` > 0
+  - **BLOCKED:** Need product documents from user (DailyGlow, DreamGlow, MindFuel, Reset Button, TheChill)
+- [ ] Brand: `curl -s http://localhost:6333/collections/brand | jq '.result.points_count'` > 0
+  - **BLOCKED:** Need brand guidelines document from user
+- [ ] Scientific: `curl -s http://localhost:6333/collections/scientific | jq '.result.points_count'` > 0
+  - **BLOCKED:** Need scientific references from user
+
+### Phase 3: Agent Pipeline
+**Verification:** `uv run python scripts/test_pipeline.py` completes without error
+
+- [x] FENIX: `uv run python -c "from src.agents.fenix import FenixAgent; print('OK')"` passes
+- [x] HIPPOCRATES: `uv run python -c "from src.agents.hippocrates import HippocratesAgent; print('OK')"` passes
+- [x] NEO: `uv run python -c "from src.agents.neo import NeoAgent; print('OK')"` passes
+- [x] CAN: `uv run python -c "from src.agents.can import CANOrchestrator; print('OK')"` passes
+- [ ] Pipeline test: `uv run python scripts/test_pipeline.py --dry-run` exits 0
+- [ ] Integration test: `uv run pytest tests/test_agents.py -v` all pass
 
 ### Phase 4: Output Handlers
-- [x] Markdown exporter created
-- [x] JSON exporter created
-- [x] Shopify integration created
-- [ ] Output format validation tested
-- [ ] Shopify API connection verified
+**Verification:** `uv run python scripts/test_outputs.py` creates valid files
 
-### Phase 5: End-to-End Test
-- [ ] Generate sample article: "Uyku Kalitesini Artirmanin 10 Yolu"
-- [ ] Verify Turkish content quality
-- [ ] Check scientific accuracy (HIPPOCRATES review)
-- [ ] Validate SEO optimization (NEO review)
-- [ ] Export to all formats (md, json, shopify)
+- [x] Markdown: `uv run python -c "from src.outputs.markdown import MarkdownExporter; print('OK')"` passes
+- [x] JSON: `uv run python -c "from src.outputs.json_export import JSONExporter; print('OK')"` passes
+- [x] Shopify: `uv run python -c "from src.outputs.shopify import ShopifyPublisher; print('OK')"` passes
+- [ ] Export test: `uv run python scripts/test_outputs.py` creates files in output/
+
+### Phase 5: End-to-End Generation
+**Verification:** Generated article exists and passes validation
+
+- [ ] Generate: `uv run python main.py generate --topic "Uyku Kalitesi" --type blog` exits 0
+- [ ] Output exists: `ls output/articles/*.md | head -1` returns a file
+- [ ] Word count: Generated article has 1500-2500 words
+- [ ] SEO check: Article has H1, 3+ H2s, meta description
+- [ ] Turkish check: No English words in main content (except brand names)
+
+---
+
+## Blocked Items (Need User Input)
+
+| Item | What's Needed | Where to Put |
+|------|---------------|--------------|
+| Product docs | Info for DailyGlow, DreamGlow, MindFuel, Reset Button, TheChill | `knowledge_base/products/` |
+| Brand guidelines | CyraSoul tone, voice, style guide | `knowledge_base/brand/` |
+| Scientific refs | Research papers, studies to cite | `knowledge_base/scientific/` |
+| Shopify creds | Store URL + access token | `.env` file |
 
 ---
 
 ## Current Focus
-Phase 2: Adding more knowledge base documents (products, brand guidelines)
+**Waiting for user to provide knowledge base documents.**
 
-## Files to Reference
-- `.ralph/guardrails.md` - Learned constraints and signs
-- `.ralph/progress.md` - Detailed progress log
-- `state/guardrails.md` - Content generation rules (Turkish)
-- `config/agents.yaml` - Agent configurations
+Once documents are provided:
+1. Index them into Qdrant
+2. Create verification scripts
+3. Test full pipeline
+4. Generate sample article
 
-## Agent Architecture
+---
+
+## Quick Reference
+
+```bash
+# Check Qdrant status
+curl -s http://localhost:6333/collections | jq '.result.collections[].name'
+
+# Index a document
+uv run python -c "
+from src.knowledge.loader import KnowledgeLoader
+loader = KnowledgeLoader()
+loader.load_and_index('knowledge_base/products/dailyglow.md', 'products')
+"
+
+# Test RAG retrieval
+uv run python -c "
+from src.rag.retriever import RAGRetriever
+r = RAGRetriever()
+print(r.retrieve('uyku', 'wellness'))
+"
+
+# Generate content
+uv run python main.py generate --topic 'Uyku Kalitesi' --type blog
 ```
-CAN (Orchestrator)
-  ├── FENIX (Writer) → Uses RAG for wellness knowledge
-  ├── HIPPOCRATES (Reviewer) → Validates scientific claims
-  └── NEO (SEO) → Optimizes for Turkish search
-```
 
-## Key Constraints
-1. All content must be in Turkish
-2. Never make unverified health claims
-3. Max 2-3 product mentions per article
-4. Follow CyraSoul brand voice (bilimsel ama samimi)
+---
+
+## Definition of Done
+
+**This task is COMPLETE when:**
+1. All `[ ]` above are `[x]`
+2. `uv run pytest tests/ -v` passes with 0 failures
+3. A sample Turkish article exists in `output/articles/`
+4. The article passes SEO validation (H1, H2s, meta)
